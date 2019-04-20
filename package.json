@@ -8,12 +8,14 @@
     "midi-parser-js": "^3.1.7",
     "midifile": "^2.0.0",
     "rimraf": "^2.6.3",
-    "typescript": "^3.4.4"
+    "typescript": "^3.4.4",
+    "webpack": "^4.30.0"
   },
   "main": "start.js",
   "devDependencies": {
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
-    "eslint": "^5.16.0"
+    "eslint": "^5.16.0",
+    "webpack-cli": "^3.3.0"
   }
 }
