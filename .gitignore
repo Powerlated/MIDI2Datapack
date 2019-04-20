@@ -1,0 +1,4 @@
+node_modules/
+datapack/
+midi.mid
+.eslintrc.json
