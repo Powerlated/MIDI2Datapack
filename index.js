@@ -6,7 +6,7 @@ console.log("Welcome to MIDI2Datapack!");
 
 const fs = require("fs");
 
-const midiData = fs.readFileSync("./midi.mid");
+const midiData = fs.readFileSync("./mgla.mid");
 const midi = new Midi(midiData);
 
 let packMcMeta = {
@@ -35,6 +35,7 @@ rimraf("./datapack");
 fs.mkdirSync("./datapack");
 fs.mkdirSync("./datapack/data");
 fs.mkdirSync("./datapack/data/midi2datapack");
+fs.mkdirSync("./datapack/data/midi2datapack/functions");
 fs.writeFileSync("./datapack/pack.mcmeta", JSON.stringify(packMcMeta));
 
 let tracks = midi.tracks;
@@ -62,41 +63,79 @@ fs.writeFileSync(
 
 const noteTable = {
   "F#1": 0.5,
-  G1: 2 ^ (-10 / 12),
-  "G#1": 2 ^ (-9 / 12),
-  A1: 2 ^ (-8 / 12),
-  B1: 2 ^ (-7 / 12),
-  C1: 2 ^ (-6 / 12),
-  "C#1": 2 ^ (-5 / 12),
-  D1: 2 ^ (-4 / 12),
-  "D#1": 2 ^ (-3 / 12),
-  E1: 2 ^ (-2 / 12),
-  F1: 2 ^ (-1 / 12),
+  G1: 0.529732,
+  "G#1": 0.561231,
+  A1: 0.594604,
+  "A#1": 0.629961,
+  B1: 0.66742,
+  C1: 0.707107,
+  "C#1": 0.749154,
+  D1: 0.793701,
+  "D#1": 0.840896,
+  E1: 0.890899,
+  F1: 0.943874,
 
   "F#2": 1,
-  G2: 2 ^ (1 / 12),
-  "G#2": 2 ^ (2 / 12),
-  A2: 2 ^ (3 / 12),
-  "A#2": 2 ^ (4 / 12),
-  B2: 2 ^ (5 / 12),
-  C2: 2 ^ (6 / 12),
-  "C#2": 2 ^ (7 / 12),
-  D2: 2 ^ (8 / 12),
-  "D#2": 2 ^ (9 / 12),
-  E2: 2 ^ (10 / 12),
-  F2: 2 ^ (11 / 12),
+  G2: 1.059463,
+  "G#2": 1.122462,
+  A2: 1.189207,
+  "A#2": 1.259921,
+  B2: 1.33484,
+  C2: 1.414214,
+  "C#2": 1.498307,
+  D2: 1.587401,
+  "D#2": 1.681793,
+  E2: 1.781797,
+  F2: 1.887749,
   "F#3": 2
 };
 
-parsedTracks.forEach((track, trackNumber) => {
-  const dataRoot = "./datapack/data/midi2datapack";
+let finalIndex = new Array();
+const dataRoot = "./datapack/data/midi2datapack/functions/";
 
+parsedTracks.forEach((track, trackNumber) => {
   let filenamePrefix = `track${trackNumber}`;
+
+  let trackIndexCmds = new Array();
 
   track.notes.forEach((n, i) => {
     let filename = `${filenamePrefix}-tick${i.toString()}.mcfunction`;
-    console.log(filename);
+    console.log(`${dataRoot}${filename}`);
+    console.log(noteTable[`${n}2`]);
+
+    if (trackNumber == 0) {
+      fs.appendFileSync(
+        `${dataRoot}${filename}`,
+        `execute at @a run playsound minecraft:block.note_block.harp neutral @a ~ ~ ~ 1 ${
+          noteTable[`${n}2`]
+        }\n`
+      );
+    } else if (trackNumber == 1) {
+      fs.appendFileSync(
+        `${dataRoot}${filename}`,
+        `execute at @a run playsound minecraft:block.note_block.bass neutral @a ~ ~ ~ 1 ${
+          noteTable[`${n}1`]
+        }\n`
+      );
+    }
+
+    /*\nsay execute at @a run playsound minecraft:block.note_block.bit neutral @a ~ ~ ~ 1 ${
+        noteTable[`${n}2`]
+      }*/
+
+    trackIndexCmds.push(
+      `schedule function midi2datapack:track${trackNumber}-tick${i.toString()} ${i.toString()}`
+    );
   });
+
+  fs.writeFileSync(
+    `${dataRoot}${filenamePrefix}-index.mcfunction`,
+    trackIndexCmds.join("\n")
+  );
+
+  finalIndex.push(`function midi2datapack:${filenamePrefix}-index`);
 });
+
+fs.writeFileSync(`${dataRoot}index.mcfunction`, finalIndex.join("\n"));
 
 console.log(midi);
