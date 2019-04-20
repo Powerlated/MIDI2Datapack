@@ -1,5 +1,6 @@
 {
   "name": "midi-2-datapack",
+  "version": "1.0.0",
   "dependencies": {
     "@tonejs/midi": "^1.2.3",
     "blob": "0.0.5",

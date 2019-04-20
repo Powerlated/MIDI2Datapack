@@ -6,7 +6,7 @@ console.log("Welcome to MIDI2Datapack!");
 
 const fs = require("fs");
 
-const midiData = fs.readFileSync("./mgla.mid");
+const midiData = fs.readFileSync("./had2.mid");
 const midi = new Midi(midiData);
 
 let packMcMeta = {
@@ -43,16 +43,24 @@ let tracks = midi.tracks;
 let ppq = midi.header.ppq;
 let bpm = Math.round(midi.header.tempos[0].bpm);
 
-let msPerTick = 60000 / (bpm * ppq);
+let gameTicksPerTick = (60000 / (bpm * ppq)) * 20;
 
 let parsedTracks = new Array();
 
 tracks.forEach((track, trackNumber) => {
   parsedTracks[trackNumber] = {};
   parsedTracks[trackNumber].notes = new Array();
+
   track.notes.forEach((n, i) => {
-    let gameTicks = Math.round(n.ticks / 20);
-    parsedTracks[trackNumber].notes[gameTicks] = n.pitch;
+    let gameTicks = Math.round(n.ticks / gameTicksPerTick / 5);
+    parsedTracks[trackNumber].notes[gameTicks] = new Array();
+  });
+  track.notes.forEach((n, i) => {
+    let gameTicks = Math.round(n.ticks / gameTicksPerTick / 5);
+    parsedTracks[trackNumber].notes[gameTicks].push({
+      pitch: n.pitch,
+      velocity: n.velocity
+    });
   });
 });
 
@@ -101,23 +109,46 @@ parsedTracks.forEach((track, trackNumber) => {
   track.notes.forEach((n, i) => {
     let filename = `${filenamePrefix}-tick${i.toString()}.mcfunction`;
     console.log(`${dataRoot}${filename}`);
-    console.log(noteTable[`${n}2`]);
 
-    if (trackNumber == 0) {
-      fs.appendFileSync(
-        `${dataRoot}${filename}`,
-        `execute at @a run playsound minecraft:block.note_block.harp neutral @a ~ ~ ~ 1 ${
-          noteTable[`${n}2`]
-        }\n`
-      );
-    } else if (trackNumber == 1) {
-      fs.appendFileSync(
-        `${dataRoot}${filename}`,
-        `execute at @a run playsound minecraft:block.note_block.bass neutral @a ~ ~ ~ 1 ${
-          noteTable[`${n}1`]
-        }\n`
-      );
-    }
+    n.forEach(l => {
+      console.log(noteTable[`${l.pitch}2`]);
+      if (trackNumber == 0) {
+        fs.appendFileSync(
+          `${dataRoot}${filename}`,
+          `execute at @a run playsound minecraft:block.note_block.harp neutral @a ~ ~ ~ ${
+            l.velocity
+          } ${noteTable[`${l.pitch}2`]}\n`
+        );
+      } else if (trackNumber == 1) {
+        fs.appendFileSync(
+          `${dataRoot}${filename}`,
+          `execute at @a run playsound minecraft:block.note_block.harp neutral @a ~ ~ ~ ${
+            l.velocity
+          } ${noteTable[`${l.pitch}2`]}\n`
+        );
+      } else if (trackNumber == 2) {
+        fs.appendFileSync(
+          `${dataRoot}${filename}`,
+          `execute at @a run playsound minecraft:block.note_block.harp neutral @a ~ ~ ~ ${
+            l.velocity
+          } ${noteTable[`${l.pitch}2`]}\n`
+        );
+      } else if (trackNumber == 3) {
+        fs.appendFileSync(
+          `${dataRoot}${filename}`,
+          `execute at @a run playsound minecraft:block.note_block.bass neutral @a ~ ~ ~ ${
+            l.velocity
+          } ${noteTable[`${l.pitch}2`]}\n`
+        );
+      } else if (trackNumber == 4) {
+        fs.appendFileSync(
+          `${dataRoot}${filename}`,
+          `execute at @a run playsound minecraft:block.note_block.bass neutral @a ~ ~ ~ ${
+            l.velocity
+          } ${noteTable[`${l.pitch}2`]}\n`
+        );
+      }
+    });
 
     /*\nsay execute at @a run playsound minecraft:block.note_block.bit neutral @a ~ ~ ~ 1 ${
         noteTable[`${n}2`]
